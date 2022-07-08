@@ -1,0 +1,97 @@
+<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+
+<style>
+	body {
+		margin : 0;
+		background: white;
+	}
+	canvas {
+		position:absolute;
+		left:0;
+		top:0;
+	}
+	h1 {
+		text-align: center;
+		color: gray;
+	}
+	h2 {
+		color: black;
+		position: relative;
+		font-size:35px;
+		font-family:Cambria;
+		text-align: center;
+		margin-top:20px;
+		z-index: 3;
+		user-select: none;
+		display:block;
+		
+	}
+	#center {
+		background-color:lightGrey;
+			width:275px;
+			padding:5px;
+			user-select: none;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			-webkit-transform: translate(-50%, -50%);
+			transform: translate(-50%, -50%);
+			display:block;
+			z-index: 3;
+		}
+	#chat {
+		background-color: rgba(220,220,220, 0.1);
+		width:400px;
+		height:290px;
+		float:right;
+		z-index: 3;
+		position:relative;
+		user-select: none;
+		display:none;
+}
+</style>
+
+<head>
+	
+	<title>Wizard game</title>
+	<h1 class='fixed select-none ml-2' >Test multiplayer</h1>
+</head>
+
+<body>
+
+	<h2 id="main-title">Wizard Game</h2>
+	<div id="center">
+		
+		<h3 style="display:inline">Please enter your username</h3>
+		<form id="usernameForm">
+			<input type="text" name="username" maxlength="13" required>
+				<input type="submit" value="Submit">
+		</form>
+	</div>
+<div class="stack">
+	<canvas id="background" style="z-index:2;margin-top:0px;"></canvas>
+	<canvas id="canvas" style="z-index:2;margin-top:0px;"></canvas>
+
+</div>
+<div id="chat">
+	<p id="line-11">- </p>
+	<p id="line-10">-</p>
+	<p id="line-9">- </p>
+	<p id="line-8">- </p>
+	<p id="line-7">- </p>
+	<p id="line-6">- </p>
+	<p id="line-5">- </p>
+	<p id="line-4">- </p>
+	<p id="line-3">- </p>
+	<p id="line-2">- </p>
+	<p id="line-1">- </p>
+	
+	<form id="chatForm">
+		<input type="text" id="chatText" name="chat" maxlength="35" required>
+		<input type="submit" value="Submit">
+	</form>
+</div>
+
+<script src="./client.js"></script>
+
+</body>
