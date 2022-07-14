@@ -22,7 +22,7 @@ let players;
 let clientId;
 
 let name;
-let ws = new WebSocket("ws://3.8.122.91:3000")
+let ws = new WebSocket("ws://18.170.32.199:3000")
  
 let playerStatus = false; //false for in main menu, true for in game
 
