@@ -17,7 +17,7 @@ const world_size = {
 }
 
 class Player {
-	constructor(x, y, health, id, cameraX, cameraY, name) {
+	constructor(x, y, health, id, cameraX, cameraY, name, canvasx, canvasy) {
 		this.x = x
 		this.y = y		
 		this.velocity = {
@@ -44,6 +44,8 @@ class Player {
 		this.level = 1
 		this.totalExperience = 0
 		this.index = 0;
+		this.canvasx = canvasx;
+		this.canvasy = canvasy;
 	}
 	handleExperience() {
 		if (this.health <= 0) {// on death
@@ -51,9 +53,7 @@ class Player {
 			console.log('player ' + (this.index + 1) + ' has died')
 			this.health = 100
 			this.x = (world_size.x / 2)
-			this.cameraCoords.x = (world_size.x / 2) - (canvas.x / 2) 
 			this.y = (world_size.y / 2)
-			this.cameraCoords.y = (world_size.y / 2) - (canvas.y / 2)
 			
 
 			let experienceLost = 0;
@@ -70,21 +70,19 @@ class Player {
 	}
 	borders() {
 		//to fix the border bug replace camera coords wiht world coords, welcumz
-		if (this.cameraCoords.x > world_size.x - canvas.x) {
-			this.x = (world_size.x - canvas.x) + (canvas.x / 2)
-			this.cameraCoords.x = world_size.x - canvas.x
+		if (this.x > world_size.x - 1000) {
+			this.x = world_size.x - 1000
 		} 
-		if (this.cameraCoords.x < 0) {
-			this.x = 0 + (canvas.x / 2)
-			this.cameraCoords.x = 0 
+		if (this.x < 1000) {
+			this.x = 1000
+			 
 		} 
-		if (this.cameraCoords.y > world_size.y - canvas.y) {
-			this.y = world_size.y - canvas.y + (canvas.y / 2) 
-			this.cameraCoords.y = world_size.y - canvas.y 
+		if (this.y > world_size.y - 1000) {
+			this.y = world_size.y - 1000
+			
 		}  
-		if (this.cameraCoords.y < 0){
-			this.y = 0 + (canvas.y / 2)
-			this.cameraCoords.y = 0 
+		if (this.y < 1000){
+			this.y = 1000 
 		} 	
 	}
 	handlemovement() {
@@ -101,10 +99,10 @@ class Player {
 		for (let c = 0; c < world.object_list.length; c++) {
 			if (world.object_list[c].object == 'tree') {
 
-				this.offsetX = 75 //changes x of hitbox
-				this.offsetL = 50 //changes length larger is shroter
-				this.offsetY = 7//height of hitbox below 
-				this.deltaOffSetY = 30 // height of hitbox above
+				this.offsetX = -5 //changes x of hitbox less is to the left
+				this.offsetL = -60 //changes length larger is shroter
+				this.offsetY = 30//height of hitbox below 
+				this.deltaOffSetY = 10 // height of hitbox above
 				
 				//remember coords are top right of player, player is 50 long 60 high
 				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
@@ -137,6 +135,27 @@ class Player {
 					this.velocity.y = 0
 					this.cameraVelocity.y = 0
 				}
+			}
+			if (world.object_list[c].object == 'stump1') {
+
+				this.offsetX = 12.5 //changes x of hitbox less is to the left
+				this.offsetL = -30 //changes length larger is shroter
+				this.offsetY = 0//height of hitbox below 
+				this.deltaOffSetY = 0 // height of hitbox above
+				
+				//remember coords are top right of player, player is 50 long 60 high
+				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y >= world.object_list[c].y + this.deltaOffSetY && this.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) { //collide with object x
+					this.velocity.x = 0
+					this.cameraVelocity.x = 0
+				}
+				
+				if ((this.x >= world.object_list[c].x + this.offsetX && this.x < world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y + this.velocity.y >= world.object_list[c].y + this.deltaOffSetY && this.y + this.velocity.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) {
+					this.velocity.y = 0
+					this.cameraVelocity.y = 0
+				}
+					
 			}
 		}
 	}
@@ -172,13 +191,16 @@ class Player {
 					
 					setTimeout(() => {
 						this.projectiles.splice(c, 1)	
+						gameState.projectiles.splice(c,1)
 					}, 0)
 				}
 			}
 
-			if (this.projectiles[c].x + this.projectiles[c].radius < 0 || this.projectiles[c].x + this.projectiles[c].radius > canvas.x || this.projectiles[c].y + this.projectiles[c].radius < 0 || this.projectiles[c].y + this.projectiles[c].radius > canvas.y) {
+			if (this.projectiles[c].x + this.projectiles[c].radius < 0 || this.projectiles[c].x + this.projectiles[c].radius > this.canvasx || this.projectiles[c].y + this.projectiles[c].radius < 0 || this.projectiles[c].y + this.projectiles[c].radius > this.canvasy) {
 				setTimeout(() => {
 					this.projectiles.splice(c, 1)	
+					gameState.projectiles.splice(c,1)
+					
 				}, 0)
 			}
 			for (let d = 0; d < players.length; d++) {
@@ -189,7 +211,8 @@ class Player {
 				
 						if (dist < 40 ) { // on collision
 							setTimeout(() => {
-								this.projectiles.splice(c, 1)	
+								this.projectiles.splice(c, 1)
+								gameState.projectiles.splice(c,1)	
 							}, 0)
 	
 							if (players[d].healthImmunity <= 0) { 
@@ -212,9 +235,9 @@ class Player {
 		for (let c = 0; c < world.object_list.length; c++) {
 			if (world.object_list[c].object == 'tree') {
 					this.hitbox = {
-						length: 30,
-						height: 150,
-						offsetX: 100,
+						length: 100,
+						height: 100,
+						offsetX: 50,
 						deltaOffSetX: 35,
 					}
 
@@ -222,13 +245,15 @@ class Player {
 						if ((this.projectiles[p].worldCoords.x + this.hitbox.length + this.projectiles[p].velocity.x >= world.object_list[c].x + this.hitbox.offsetX && this.projectiles[p].worldCoords.x - this.hitbox.deltaOffSetX + this.projectiles[p].velocity.x < world.object_list[c].x + this.hitbox.offsetX)
 						&& (this.projectiles[p].worldCoords.y >= world.object_list[c].y && this.projectiles[p].worldCoords.y < world.object_list[c].y + this.hitbox.height)) { //collide with object x 	
 							setTimeout(() => {
-								this.projectiles.splice(p, 1)	
+								this.projectiles.splice(p, 1)
+								gameState.projectiles.splice(p,1)	
 							}, 0)
 						}
 						if ((this.projectiles[p].worldCoords.x + this.hitbox.length >= world.object_list[c].x + this.hitbox.offsetX && this.projectiles[p].worldCoords.x - this.hitbox.deltaOffSetX < world.object_list[c].x + this.hitbox.offsetX)
 						&& (this.projectiles[p].worldCoords.y + this.projectiles[p].velocity.y >= world.object_list[c].y && this.projectiles[p].worldCoords.y + this.projectiles[p].velocity.y < world.object_list[c].y + this.hitbox.height)) {
 							setTimeout(() => {
 								this.projectiles.splice(p, 1)	
+								gameState.projectiles.splice(p,1)
 							}, 0)
 						}	
 					}
@@ -251,18 +276,20 @@ class Player {
 					
 
 			}
-			if (world.object_list[c].object == 'rock') {
+			if (world.object_list[c].object == 'rock' || world.object_list[c].object == 'stump1') {
 				for (let p = 0; p < this.projectiles.length; p++) {
 					if ((this.projectiles[p].worldCoords.x + this.projectiles[p].velocity.x + 20 >= world.object_list[c].x && this.x - 25 + this.projectiles[p].velocity.x < world.object_list[c].x + world.object_list[c].length)
 					&& (this.y + 35 >= world.object_list[c].y && this.y - 25 < world.object_list[c].y + world.object_list[c].height)) { //collide with object x 	
 						setTimeout(() => {
 							this.projectiles.splice(p, 1)	
+							gameState.projectiles.splice(p,1)
 						}, 0)
 					}
 					if ((this.projectiles[p].worldCoords.x + 20 >= world.object_list[c].x && this.projectiles[p].worldCoords.x - 25 < world.object_list[c].x + world.object_list[c].length)
 					&& (this.projectiles[p].worldCoords.y + 35 + this.projectiles[p].velocity.y >= world.object_list[c].y && this.projectiles[p].worldCoords.y - 25 + this.projectiles[p].velocity.y < world.object_list[c].y + world.object_list[c].height)) {
 						setTimeout(() => {
 							this.projectiles.splice(p, 1)	
+							gameState.projectiles.splice(p,1)
 						}, 0)
 					}
 				}
@@ -346,13 +373,14 @@ class Projectile {
 	}
 }
 
-const tile_size = 640;
+const tile_size = 340;
 
 
 class World {
-	constructor (data, data1) {
+	constructor (data) {
 		this.tile_list = []
 		this.object_list = []
+		this.grass_list = []
 
 		//handle tiles
 		data.forEach((row, rowIndex) => {
@@ -376,66 +404,106 @@ class World {
 			})
 		})
 
+		this.numRows = 24;
+		this.numCols = 26;
+		this.grassDensity = 1 ;
+		this.shakyWaky = 1600;
 
-		//handle static sprites
-		data1.forEach((row, rowIndex) => {
-			row.forEach((tile, tileIndex) => {
-				let treeSprite = 'treeSprite'
-				let rockSprite = 'rockSprite'
-				if (tile==1) {
-					this.object_list.push({
-							img: treeSprite,
-							x: tileIndex * tile_size  + (tileIndex * 400) ,
-							y: rowIndex * tile_size  + (tileIndex * 400) ,
-							length: 200,
-							height: 125,
-							object: 'tree',
-							
-					})
-				} else if (tile==2) {
-					this.object_list.push({
-							img: rockSprite,
-							x: tileIndex * tile_size + (tileIndex * 400) ,
-							y: rowIndex * tile_size + (tileIndex * 400) ,
-							length: 60,
+
+			for (let i = 0; i < this.numRows; i++) {
+				for (let c = 0; c < this.numCols; c++) {
+
+					this.number = Math.floor(Math.random() * (8 - 1) + 1);
+					let treeSprite = 'treeSprite'
+					let rockSprite = 'rockSprite'
+					let grassSprite1 = 'bigGrass1'
+					let grassSprite2 = 'bigGrass2'
+					let stump1 = 'stump1'
+
+					if (this.number == 1 || this.number == 2) {
+						this.object_list.push({
+								img: treeSprite,
+								x: 300+ (Math.random() * ((c * tile_size + 100 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky) , //spawns randomly within its tile
+								y: 300 +(Math.random() * ((i * tile_size + 125 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky) ,
+								length: 100,
+								height: 125,
+								object: 'tree',
+								
+						})
+					} else if (this.number == 3) {
+						this.object_list.push({
+								img: rockSprite,
+								x: 300 +(Math.random() * ((c * tile_size + 100 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky) ,
+								y: 300 +(Math.random() * ((i * tile_size + 125 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky) ,
+								length: 100,
+								height: 125,
+								object: 'rock',
+						})
+
+					} else if (this.number == 4) {
+						this.object_list.push({
+								img: stump1,
+								x: 300 +(Math.random() * ((c * tile_size + 100 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky) ,
+								y: 300 +(Math.random() * ((i * tile_size + 125 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky) ,
+								length: 100,
+								height: 125,
+								object: 'stump1',
+						})	
+					}
+					this.shakyWaky = 200
+					for (let d = 0; d < this.grassDensity; d++) {
+						this.grass_list.push({
+							img: grassSprite1,
+							x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
+							y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
+							length: 40,
 							height: 50,
-							object: 'rock',
-					})
-				}
-	
-			})
-		})
-	}
+
+						})	
+						this.grass_list.push({
+							img: grassSprite2,
+							x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
+							y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
+							length: 40,
+							height: 50,
+
+						})					
+					}
+
+			}
+		}
+
+
+}
 }	
 world_data = [
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+
 ]
-world_data1 = [
-[1,1,1,1,2,1,1,1],
-[1,2,1,1,1,1,1,1],
-[1,2,1,1,1,2,1,1],
-[1,2,1,2,1,2,1,1],
-[1,2,1,1,1,2,1,1],
-[1,2,1,1,1,2,1,1],
-[1,2,1,1,2,1,1,1],
-[1,2,1,1,1,2,1,1],
-[1,2,1,1,1,2,1,1],
-]
+
 
 
 
@@ -512,12 +580,10 @@ class Enemy {
 	enemyCollision() {
 		for (let c = 0; c < world.object_list.length; c++) {
 			if (world.object_list[c].object == 'tree') {
-	
-					this.offsetX = 75 //changes x of hitbox
-					this.offsetL = 50 //changes length larger is shroter
-					this.offsetY = 7//height of hitbox below 
-					this.deltaOffSetY = 30 // height of hitbox above
-				
+				this.offsetX = -5 //changes x of hitbox less is to the left
+				this.offsetL = -60 //changes length larger is shroter
+				this.offsetY = 30//height of hitbox below 
+				this.deltaOffSetY = 10 // height of hitbox above
 				
 				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
 				&& (this.y >= world.object_list[c].y + this.deltaOffSetY && this.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) { //collide with object x
@@ -547,6 +613,27 @@ class Enemy {
 					this.velocity.y = 0
 	
 				}
+			}
+			if (world.object_list[c].object == 'stump1') {
+
+				this.offsetX = 12.5 //changes x of hitbox less is to the left
+				this.offsetL = -30 //changes length larger is shroter
+				this.offsetY = 0//height of hitbox below 
+				this.deltaOffSetY = 0 // height of hitbox above
+				
+				//remember coords are top right of player, player is 50 long 60 high
+				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y >= world.object_list[c].y + this.deltaOffSetY && this.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) { //collide with object x
+					this.velocity.x = 0
+					
+				}
+				
+				if ((this.x >= world.object_list[c].x + this.offsetX && this.x < world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y + this.velocity.y >= world.object_list[c].y + this.deltaOffSetY && this.y + this.velocity.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) {
+					this.velocity.y = 0
+					
+				}
+					
 			}
 		}
 	}
@@ -585,118 +672,13 @@ let enemies = [];
 let playerIdList = [];
 let players = [];
 
-world = new World(world_data, world_data1)
+world = new World(world_data)
 
 let lines = ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]
-/*
-io.on("connection", socket => {
-	playerIdList.push(socket.id)
-
-	io.emit('world-data', world)
-	
-	for (let i = 0; i < playerIdList.length; i++) {
-		if (socket.id === playerIdList[i]) {
-
-			
-			socket.on("disconnect", (reason) => {
-
-				players.splice(players[i], 1)
-				playerIdList.splice([i], 1)
-				console.log(`player ${(i)} has disconnected`)
-
-			})
-			
-
-			socket.on("message", message => {
-
-
-				lines.unshift(players[i].name + " > " + message)
-			
-				io.emit("messages", lines)
-				
-			})
-
-			socket.on('keypress', keyPressCode => {
-
-				if (keyPressCode.code == 119) {
-					if (players[i].keys.indexOf('keyW') == -1) {players[i].keys.unshift('keyW');}
-				}
-				if (keyPressCode.code == 100) {
-					if (players[i].keys.indexOf('keyD') == -1) {players[i].keys.unshift('keyD');}
-				}
-				if (keyPressCode.code == 115) {
-					if (players[i].keys.indexOf('keyS') == -1) {players[i].keys.unshift('keyS');}
-				}
-				if (keyPressCode.code == 97) {
-					if (players[i].keys.indexOf('keyA') == -1) {players[i].keys.unshift('keyA');}
-				}
-				
-				if (keyPressCode.code == 101) { //e
-					if (players[i].rotation.indexOf('right') == -1) {players[i].rotation.unshift('right');}
-				}
-				if (keyPressCode.code == 113) {//q
-					if (players[i].rotation.indexOf('left') == -1) {players[i].rotation.unshift('left');}
-				}
-				if (keyPressCode.code == 102) {//f
-					players[i].angle = 0
-				}
-				
-			})
-
-
-			socket.on('keyup', keyUpCode => {
-
-
-				switch (keyUpCode.code){
-					case 87: return players[i].keys.splice(players[i].keys.indexOf('keyW'), 1), players[i].velocity.y = 0, players[i].cameraVelocity.y = 0; //W
-					case 65: if (players[i].direction == 0 && players[i].keys.indexOf('keyA') > -1) {return players[i].keys.splice(players[i].keys.indexOf('keyA'), 1), players[i].velocity.x = 0, players[i].cameraVelocity.x = 0;}; //A
-					case 83: return players[i].keys.splice(players[i].keys.indexOf('keyS'), 1), players[i].velocity.y = 0, players[i].cameraVelocity.y = 0; //S
-					case 68: if (players[i].direction == 1 && players[i].keys.indexOf('keyD') > -1) {return players[i].keys.splice(players[i].keys.indexOf('keyD'), 1), players[i].velocity.x = 0, players[i].cameraVelocity.x = 0;}; //D
-					//case 69: return players[i].rotation.splice(players[i].rotation.indexOf('right'), 1), players[i].angleVelo = 0;
-					//case 81: return players[i].rotation.splice(players[i].rotation.indexOf('left'), 1), players[i].angleVelo = 0;
-				}
-
-			})
-				
-			let bulletSpeed = 10;
-			socket.on('click', (mouseCoords) => {
-
-				const dist = Math.hypot(mouseCoords.x - (players[i].x - players[i].cameraCoords.x), mouseCoords.y - (players[i].y  - players[i].cameraCoords.y))
-
-				var velocity = {
-					x: (mouseCoords.x - (players[i].x - players[i].cameraCoords.x)) * bulletSpeed / dist,
-					y: (mouseCoords.y - (players[i].y - players[i].cameraCoords.y)) * bulletSpeed / dist,
-				}
-				playerProjWorld = {
-					x:(players[i].x),
-					y:(players[i].y),
-				}
-
-				setTimeout(() => {
-				players[i].projectiles.push(new Projectile(players[i].x - players[i].cameraCoords.x, players[i].y - players[i].cameraCoords.y,
-				3, velocity, socket.id, playerProjWorld.x, playerProjWorld.y))
-				}, 0)
-				
-
-			}) 
-		}
-	}
-
-	socket.on('canvas', canvasDimensions => {
-	
-		console.log(`player ${(playerIdList.length)} has connected with id: ${(playerIdList[playerIdList.length - 1])}`)
-
-		canvas.x = canvasDimensions.x
-		canvas.y = canvasDimensions.y
-
-		players.push(new Player((world_size.x / 2), (world_size.y / 2), 100, socket.id, ((world_size.x / 2) - (canvas.x / 2)), ((world_size.y / 2) - (canvas.y / 2)), canvasDimensions.username)) //spawns at middle of world
-	})
-
-
-}) //end of on connect
-*/
 let bulletSpeed = 5;
 let clients = [];
+
+
 wss.on("connection", ws => {
     //connect
    
@@ -711,14 +693,13 @@ wss.on("connection", ws => {
 
 			console.log(`player ${(players.length + 1)} has connected with id: ${clientId}`)
 
-			canvas.x = result.x
-			canvas.y = result.y
+
 	
-			players.push(new Player((world_size.x / 2), (world_size.y / 2), 100, clientId, ((world_size.x / 2) - (canvas.x / 2)), ((world_size.y / 2) - (canvas.y / 2)), result.username)) //spawns at middle of world
+			players.push(new Player((world_size.x / 2), (world_size.y / 2), 100, result.clientId, ((world_size.x / 2) - (result.x / 2)), ((world_size.y / 2) - (result.y / 2)), result.username, result.x, result.y)) //spawns at middle of world
 		}
 
 		for (let i = 0; i < players.length; i++) {
-			if (clientId === players[i].id) {
+			if (result.clientId === players[i].id) {
 			
 				if (result.method === "chat") {
 					lines.unshift(players[i].name + " > " + result.message)
@@ -754,20 +735,21 @@ wss.on("connection", ws => {
 					}
 				} else if (result.method === "click") {
 
-					const dist = Math.hypot(result.x - (players[i].x - players[i].cameraCoords.x), result.y - (players[i].y  - players[i].cameraCoords.y))
+					const dist = Math.hypot(result.x - (players[i].x - result.cx), result.y - (players[i].y - result.cy))
 
 					var velocity = {
-						x: (result.x - (players[i].x - players[i].cameraCoords.x)) * bulletSpeed / dist,
-						y: (result.y - (players[i].y - players[i].cameraCoords.y)) * bulletSpeed / dist,
+						x: (result.x - (players[i].x - result.cx)) * bulletSpeed / dist,
+						y: (result.y - (players[i].y - result.cy)) * bulletSpeed / dist,
 					}
-					playerProjWorld = {
+					let playerProjWorld = {
 						x:(players[i].x),
 						y:(players[i].y),
 					}
 
+
 					setTimeout(() => {
-					players[i].projectiles.push(new Projectile(players[i].x - players[i].cameraCoords.x, players[i].y - players[i].cameraCoords.y,
-					3, velocity, clientId, playerProjWorld.x, playerProjWorld.y))
+					players[i].projectiles.push(new Projectile(players[i].x - result.cx, players[i].y - result.cy,
+					3, velocity, result.clientId, playerProjWorld.x, playerProjWorld.y))
 					}, 0)
 					
 				}
@@ -792,6 +774,7 @@ wss.on("connection", ws => {
 		"method": "world-data",
 		"tile_list": world.tile_list,
 		"object_list": world.object_list,
+		"grass_list": world.grass_list,
 	}
 
     ws.send(JSON.stringify(payLoad))
@@ -819,7 +802,7 @@ function updateProjectiles() {
 				gameState.projectiles.splice(i,1)
 			}, 0)
 		}
-		gameState.projectiles[i] = [enemyProj[i].x, enemyProj[i].y]
+		gameState.projectiles[i] = {x:enemyProj[i].x, y:enemyProj[i].y}
 		//console.log(gameState.projectiles[i])
 	}
 }
@@ -864,7 +847,7 @@ function updateEnemies(enemy, i) {
 		}, 0)
 	}
 
-	gameState.enemies[i] = [enemy.x, enemy.y, enemy.health]
+	gameState.enemies[i] = {x: enemy.x,y: enemy.y, health: enemy.health}
 }
 
 
@@ -884,7 +867,7 @@ function updatePlayers(player, i) {
 		}
 	}
 	player.update()
-	gameState.players[i] = [player.x, player.y, player.health, player.direction, player.projectiles, player.name, player.level, player.id, player.experience]
+	gameState.players[i] = {x:player.x, y:player.y, health:player.health, direction:player.direction, projectiles:player.projectiles, name:player.name, level:player.level, id:player.id, xp:player.experience}
 	
 } 
 
@@ -922,6 +905,7 @@ let gameState = {
 }
 //---------------server game loop ----------------
 setInterval(() => {
+
 	//start = performance.now();
 	for (let i = 0; i < players.length; i++) {
 		updatePlayers(players[i], i)		

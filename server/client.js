@@ -22,7 +22,7 @@ let players;
 let clientId;
 
 let name;
-let ws = new WebSocket("ws://18.170.32.199:3000")
+let ws = new WebSocket("ws://localhost:3000")
  
 let playerStatus = false; //false for in main menu, true for in game
 
@@ -52,8 +52,8 @@ function handleSubmit(event) {
 	const payLoad = {
 		"method": "join",
 		"clientId": clientId,
-		"x": canvas.width,
-		"y": canvas.height,
+		"x": canvasDimensions.x,
+		"y": canvasDimensions.y,
 		"username": name,
 	}
 	
@@ -98,7 +98,7 @@ const form1 = document.getElementById("chatForm")
 form1.addEventListener("submit", handleSubmitChat);
 form.addEventListener("submit", handleSubmit);
 
-
+let grass_list = []
 
 //-----------------------handle chat-------------------------
 let mouseOver = false;
@@ -124,7 +124,7 @@ ws.onmessage = message => {
 	} else if (response.method === "world-data") {
 		tile_list = response["tile_list"]
 		object_list = response["object_list"]
-		
+		grass_list = response["grass_list"]
 	} 
 }
 
@@ -144,12 +144,14 @@ const playerSprite = new Image()
 const playerSprite1 = new Image()
 
 const goblinSprite = new Image()
+
 goblinSprite.src = 'images/goblin1.png'
 
 playerSprite.src = 'images/wizard_sprite.png'
 playerSprite1.src = 'images/wizard_sprite1.png'
 
 function drawProjectile(x,y, colour, size) {
+	
 	c.beginPath() 
 	c.arc(x, y, size, 0, Math.PI * 2, false)
 	c.fillStyle = colour
@@ -193,11 +195,16 @@ document.onkeyup = function(e){
 
 document.addEventListener('click', (event) => {
 	if (playerStatus) {
+		let camX = camera.x
+		let camY = camera.y
+
 		const payLoad = {
 			"method": "click",
 			"clientId":clientId,
 			"x": event.clientX,
-			"y": event.clientY
+			"y": event.clientY,
+			"cx": camX,
+			"cy": camY,
 		}
 
 		ws.send(JSON.stringify(payLoad))
@@ -217,12 +224,19 @@ const flower1 = new Image()
 //static sprites
 const treeSprite = new Image()
 const rockSprite = new Image()
+const bigGrass1 = new Image()
+const bigGrass2 = new Image()
+const stump1 = new Image()
 
 grass1.src = 'images/grass1.png'
-//flower1.src = 'images/flower1.png'
 
+//flower1.src = 'images/flower1.png'
+stump1.src = 'images/stump1.png'
+bigGrass1.src = 'images/bigGrass1.png'
+bigGrass2.src = 'images/bigGrass2.png'
 treeSprite.src = 'images/tree1.png'
 rockSprite.src = 'images/rock1.png'
+
 		
 function draw(x, y, tile_list) {
 	try {
@@ -314,12 +328,21 @@ function drawObjects(x,y, object_list) {
 			if ((object_list[i].x > x - render_distance) && (object_list[i].x < x + render_distance) && (object_list[i].y > y - render_distance) && (object_list[i].y < y + render_distance)){
 				if (object_list[i].img == 'treeSprite') {c.drawImage(treeSprite, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
 				if (object_list[i].img == 'rockSprite') {c.drawImage(rockSprite, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
+				if (object_list[i].img == 'stump1') {c.drawImage(stump1, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
 			}
 		}
 	}
 	catch (err) {
 		console.log(err)
 	}
+}
+
+function drawGrass(x, y, grass_list) {
+	for (let i = 0; i < grass_list.length; i++) {
+		if (grass_list[i].img == 'bigGrass1') {ctx.drawImage(bigGrass1, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
+		if (grass_list[i].img == 'bigGrass2') {ctx.drawImage(bigGrass2, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
+	}
+
 }
 
 tile_list = []
@@ -358,35 +381,35 @@ function backgroundWorld() {
 	drawObjects(backCamera.x, backCamera.y, object_list)
 	
 	for (let i = 0; i< enemies.length; i++) {
-		c.drawImage(goblinSprite, enemies[i][0] - backCamera.x - 50, enemies[i][1] - backCamera.y - 50, 100, 100)
-		handleHealth(enemies[i][0], backCamera.x, enemies[i][1], backCamera.y, enemies[i][2])
+		c.drawImage(goblinSprite, enemies[i].x - backCamera.x - 50, enemies[i].y - backCamera.y - 50, 100, 100)
+		handleHealth(enemies[i].x, backCamera.x, enemies[i].y, backCamera.y, enemies[i].health)
 	}
 
 	for (let i = 0; i < players.length; i++) {
 
 
 			for (let x = 0; x< projectiles.length; x++) {
-				drawProjectile(projectiles[x][0] - backCamera.x, projectiles[x][1] - backCamera.y, 'red', 7)
+				drawProjectile(projectiles[x].x - backCamera.x, projectiles[x].y - backCamera.y, 'red', 7)
 			}
 
-			handleNames(players[i][0] - backCamera.x, players[i][1] - backCamera.y, players[i][5])
-			handleLevel(players[i][0] - backCamera.x, players[i][1] - backCamera.y, players[i][6])	
-
-			if (players[i][3] == 1) {
-					c.drawImage(playerSprite, players[i][0] - backCamera.x - 27.5, players[i][1] - backCamera.y - 30, 55, 60) //if facing right draw facing right image
+			handleNames(players[i].x - backCamera.x, players[i].y - backCamera.y, players[i].name)
+			handleLevel(players[i].x - backCamera.x, players[i].y - backCamera.y, players[i].level)	
+			drawGrass(backCamera.x, backCamera.y, grass_list)
+			if (players[i].direction == 1) {
+					c.drawImage(playerSprite, players[i].x - backCamera.x - 27.5, players[i].y - backCamera.y - 30, 55, 60) //if facing right draw facing right image
 			} else {
-				c.drawImage(playerSprite1, players[i][0] - backCamera.x - 27.5, players[i][1] - backCamera.y - 30, 55, 60)
+				c.drawImage(playerSprite1, players[i].x - backCamera.x - 27.5, players[i].y - backCamera.y - 30, 55, 60)
 			}
 
 
-			handleHealth(players[i][0], backCamera.x, players[i][1], backCamera.y, players[i][2])
+			handleHealth(players[i].x, backCamera.x, players[i].y, backCamera.y, players[i].health)
 
 
 
 
-			for (let c = 0;c < players[i][4].length; c++) {
-				if (players[i][4][c].timer >= 5) {
-					drawProjectile(players[i][4][c].worldCoords.x - (backCamera.x), players[i][4][c].worldCoords.y - (backCamera.y), 'blue', 3)
+			for (let c = 0;c < players[i].projectiles.length; c++) {
+				if (players[i].projectiles[c].timer >= 5) {
+					drawProjectile(players[i].projectiles[c].x - (backCamera.x), players[i].projectiles[c].y - (backCamera.y), 'blue', 3)
 				}
 			}
 		
@@ -400,7 +423,7 @@ function backgroundWorld() {
 		handleWorld()
 		
 	}
-
+	
 }
 
 function handleWorld() {
@@ -411,79 +434,94 @@ function handleWorld() {
 		ctx.clearRect(0, 0, canvasDimensions.x, canvasDimensions.y)
 
 
+
 		for (let i = 0; i< enemies.length; i++) {
-			c.drawImage(goblinSprite, enemies[i][0] - camera.x - 50, enemies[i][1] - camera.y - 50, 100, 100)
-			handleHealth(enemies[i][0], camera.x, enemies[i][1], camera.y, enemies[i][2])
+			c.drawImage(goblinSprite, enemies[i].x - camera.x - 50, enemies[i].y - camera.y - 50, 100, 100)
+			handleHealth(enemies[i].x, camera.x, enemies[i].y, camera.y, enemies[i].health)
 
 		}
 
 		for (let i = 0; i < players.length; i++) {
 			
-			if (players[i][7] == clientId) {
-				
+			if (players[i].id == clientId) {
+					camera.x = players[i].x - (canvasDimensions.x / 2)
+					camera.y = players[i].y - (canvasDimensions.y / 2)
+					x = i
+					
+					
+					for (let c = 0;c < players[i].projectiles.length; c++) {
+						if (players[i].projectiles[c].timer >= 5) {
+							drawProjectile(players[i].projectiles[c].worldCoords.x - camera.x, players[i].projectiles[c].worldCoords.y - camera.y, 'blue', 3)
+						}
+					}
 					for (let x = 0; x< projectiles.length; x++) {
 						
-						drawProjectile(projectiles[x][0] - camera.x, projectiles[x][1] - camera.y, 'red', 7)
+						drawProjectile(projectiles[x].x - camera.x, projectiles[x].y - camera.y, 'red', 7)
 					}
-					
-					handleNames(-(players[i][0] - players[i][0] - (canvasDimensions.x / 2)),-( players[i][1] - players[i][1] - (canvasDimensions.y / 2)), players[i][5])
-					handleLevel(-(players[i][0] - players[i][0] - (canvasDimensions.x / 2)), -(players[i][1] - players[i][1] - (canvasDimensions.y / 2)), players[i][6])
-					handleInfo(players[i][0], players[i][1], ( Math.floor(100 * 1.1**(players[i][6]-1)) - players[i][8]   ), players[i][2])
+
 
 
 					try {
-						draw(players[i][0]  - (canvasDimensions.x / 2), players[i][1]  - (canvasDimensions.y / 2), tile_list)
+						draw(players[i].x  - (canvasDimensions.x / 2), players[i].y  - (canvasDimensions.y / 2), tile_list)
 						
 					}
 					catch(err) {
 						console.log(err)
 					}	
 
-					camera.x = players[x][0] - (canvasDimensions.x / 2)
-					camera.y = players[x][1] - (canvasDimensions.y / 2)
+					drawGrass(camera.x, camera.y, grass_list)
 
-					x = i
-
-					if (players[i][3] == 1) {
+					if (players[i].direction == 1) {
 						
 						
-						c.drawImage(playerSprite, -(players[i][0] - players[i][0] - (canvasDimensions.x / 2))- 27.5, -(players[i][1] - players[i][1] - (canvasDimensions.y / 2)) - 30, 55, 60) // if playerid is socket id draw it at middle aka if its you draw in middle of screen
+						c.drawImage(playerSprite, players[i].x - camera.x - 27.5, players[i].y - camera.y - 30, 55, 60) // if playerid is socket id draw it at middle aka if its you draw in middle of screen
 					} else {
-						c.drawImage(playerSprite1, -(players[i][0] - players[i][0] - (canvasDimensions.x / 2)) - 27.5, -(players[i][1] - players[i][1] - (canvasDimensions.y / 2) )- 30, 55, 60)
+						c.drawImage(playerSprite1, players[i].x - camera.x - 27.5, players[i].y - camera.y - 30, 55, 60)
 					}
 
 					
-					handleHealth(players[i][0], players[i][0] - (canvasDimensions.x / 2), players[i][1], players[i][1] - (canvasDimensions.y / 2), players[i][2])
+					handleHealth(players[i].x, camera.x, players[i].y, camera.y, players[i].health)
 					
 					try {
-						drawObjects(players[i][0] - (canvasDimensions.x / 2), players[i][1] - (canvasDimensions.y / 2), object_list)
+						drawObjects(camera.x, camera.y, object_list)
 					}
 					catch(err) {
 						drawObjects({x:(2560 - (canvas.x / 2)), y:(2240 - (canvas.y / 2))})
 					}
-				
+					
+					
+					handleNames(players[i].x - camera.x, players[i].y - camera.y, players[i].name)
+					handleLevel(players[i].x - camera.x, players[i].y - camera.y, players[i].level)
+					handleInfo(players[i].x, players[i].y, ( Math.floor(100 * 1.1**(players[i].level-1)) - players[i].xp ), players[i].health)
+
 			} else {
-				handleNames(players[i][0] - camera.x, players[i][1] - camera.y, players[i][5])
-				handleLevel(players[i][0] - camera.x, players[i][1] - camera.y, players[i][6])
+
+				camera.x = players[x].x - (canvasDimensions.x / 2)
+				camera.y = players[x].y - (canvasDimensions.y / 2)
+				
+
 
 				
-				if (players[i][3] == 1) {
-						c.drawImage(playerSprite, players[i][0] - camera.x - 27.5, players[i][1] - camera.y - 30, 55, 60) //if facing right draw facing right image
+				for (let c = 0;c < players[i].projectiles.length; c++) {
+					if (players[i].projectiles[c].timer >= 5) {
+						drawProjectile(players[i].projectiles[c].worldCoords.x - camera.x, players[i].projectiles[c].worldCoords.y - camera.y, 'blue', 3)
+					}
+				}
+
+				if (players[i].direction == 1) {
+						c.drawImage(playerSprite, players[i].x - camera.x - 27.5, players[i].y - camera.y - 30, 55, 60) //if facing right draw facing right image
 				} else {
-						c.drawImage(playerSprite1, players[i][0] - camera.x - 27.5, players[i][1] - camera.y - 30, 55, 60)
+						c.drawImage(playerSprite1, players[i].x - camera.x - 27.5, players[i].y - camera.y - 30, 55, 60)
 				}
 
 
-				handleHealth(players[i][0], players[x][0] - (canvasDimensions.x / 2), players[i][1], players[x][1] - (canvasDimensions.y / 2), players[i][2])
-
+				handleHealth(players[i].x, camera.x, players[i].y, camera.y, players[i].health)
+				handleNames(players[i].x - camera.x, players[i].y - camera.y, players[i].name)
+				handleLevel(players[i].x - camera.x, players[i].y - camera.y, players[i].level)
 			}
 
 			
-			for (let c = 0;c < players[i][4].length; c++) {
-				if (players[i][4][c].timer >= 5) {
-					drawProjectile(players[i][4][c].worldCoords.x - (players[x][0] - (canvasDimensions.x / 2)), players[i][4][c].worldCoords.y - (players[x][1] - (canvasDimensions.y / 2)), 'blue', 3)
-				}
-			}
+
 			
 		}
 
