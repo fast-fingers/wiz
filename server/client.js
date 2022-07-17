@@ -214,7 +214,16 @@ document.addEventListener('click', (event) => {
 
 
 const tile_size = 640;
-const render_distance = 2500;
+let render_distance = 0
+
+if (canvas.width > canvas.height) {
+
+	render_distance = canvas.width + 200;
+} else {
+	render_distance = canvas.height + 200;
+}
+
+
 
 
 //tiles
@@ -224,14 +233,19 @@ const flower1 = new Image()
 //static sprites
 const treeSprite = new Image()
 const rockSprite = new Image()
+const rock2 = new Image()
+const rock3 = new Image()
 const bigGrass1 = new Image()
 const bigGrass2 = new Image()
 const stump1 = new Image()
+
 
 grass1.src = 'images/grass1.png'
 
 //flower1.src = 'images/flower1.png'
 stump1.src = 'images/stump1.png'
+rock2.src = 'images/rock2.png'
+rock3.src = 'images/rock3.png'
 bigGrass1.src = 'images/bigGrass1.png'
 bigGrass2.src = 'images/bigGrass2.png'
 treeSprite.src = 'images/tree1.png'
@@ -323,14 +337,16 @@ function handleHealth(x, cx, y, cy, health) {
 function drawObjects(x,y, object_list) {
 	try {
 		//not tiles
-		for (let i = 0; i < object_list.length; i++) {
+		for (let i = 0; i < object_list.length; i++) { //you could totally write this in one line
 			//only render in surrounding trees and rocks and shit
 			if ((object_list[i].x > x - render_distance) && (object_list[i].x < x + render_distance) && (object_list[i].y > y - render_distance) && (object_list[i].y < y + render_distance)){
 				if (object_list[i].img == 'treeSprite') {c.drawImage(treeSprite, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
 				if (object_list[i].img == 'rockSprite') {c.drawImage(rockSprite, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
 				if (object_list[i].img == 'stump1') {c.drawImage(stump1, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
+				if (object_list[i].img == 'rock2') {c.drawImage(rock2, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
 			}
 		}
+
 	}
 	catch (err) {
 		console.log(err)
@@ -339,8 +355,13 @@ function drawObjects(x,y, object_list) {
 
 function drawGrass(x, y, grass_list) {
 	for (let i = 0; i < grass_list.length; i++) {
-		if (grass_list[i].img == 'bigGrass1') {ctx.drawImage(bigGrass1, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
-		if (grass_list[i].img == 'bigGrass2') {ctx.drawImage(bigGrass2, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
+		if ((grass_list[i].x > x - render_distance) && (grass_list[i].x < x + render_distance) && (grass_list[i].y > y - render_distance) && (grass_list[i].y < y + render_distance)) {
+			if (grass_list[i].img == 'bigGrass1') {ctx.drawImage(bigGrass1, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
+			if (grass_list[i].img == 'bigGrass2') {ctx.drawImage(bigGrass2, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}		
+			if (grass_list[i].img == 'rock3') {ctx.drawImage(rock3, grass_list[i].x - x, grass_list[i].y - y, grass_list[i].length, grass_list[i].height)}
+			
+		}
+
 	}
 
 }
@@ -379,7 +400,8 @@ function backgroundWorld() {
 
 	draw(backCamera.x, backCamera.y, tile_list)
 	drawObjects(backCamera.x, backCamera.y, object_list)
-	
+	drawGrass(backCamera.x, backCamera.y, grass_list)
+
 	for (let i = 0; i< enemies.length; i++) {
 		c.drawImage(goblinSprite, enemies[i].x - backCamera.x - 50, enemies[i].y - backCamera.y - 50, 100, 100)
 		handleHealth(enemies[i].x, backCamera.x, enemies[i].y, backCamera.y, enemies[i].health)
@@ -394,7 +416,7 @@ function backgroundWorld() {
 
 			handleNames(players[i].x - backCamera.x, players[i].y - backCamera.y, players[i].name)
 			handleLevel(players[i].x - backCamera.x, players[i].y - backCamera.y, players[i].level)	
-			drawGrass(backCamera.x, backCamera.y, grass_list)
+			
 			if (players[i].direction == 1) {
 					c.drawImage(playerSprite, players[i].x - backCamera.x - 27.5, players[i].y - backCamera.y - 30, 55, 60) //if facing right draw facing right image
 			} else {

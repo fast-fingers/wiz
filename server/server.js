@@ -157,6 +157,27 @@ class Player {
 				}
 					
 			}
+			if (world.object_list[c].object == 'rock2') {
+
+				this.offsetX = -13 //changes x of hitbox less is to the left
+				this.offsetL = -52 //changes length larger is shroter
+				this.offsetY = 28//height of hitbox below 
+				this.deltaOffSetY = -25 // height of hitbox above, more is less, 
+				
+				//remember coords are top right of player, player is 50 long 60 high
+				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y >= world.object_list[c].y + this.deltaOffSetY && this.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) { //collide with object x
+					this.velocity.x = 0
+					this.cameraVelocity.x = 0
+				}
+				
+				if ((this.x >= world.object_list[c].x + this.offsetX && this.x < world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y + this.velocity.y >= world.object_list[c].y + this.deltaOffSetY && this.y + this.velocity.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) {
+					this.velocity.y = 0
+					this.cameraVelocity.y = 0
+				}
+					
+			}
 		}
 	}
 	handleProjectiles() {
@@ -233,7 +254,7 @@ class Player {
 	projCollision () {
 		if (this.projectiles[0] || enemyProj[0]) {
 		for (let c = 0; c < world.object_list.length; c++) {
-			if (world.object_list[c].object == 'tree') {
+			if (world.object_list[c].object == 'tree' || world.object_list[c].object == 'rock2') {
 					this.hitbox = {
 						length: 100,
 						height: 100,
@@ -419,6 +440,9 @@ class World {
 					let grassSprite1 = 'bigGrass1'
 					let grassSprite2 = 'bigGrass2'
 					let stump1 = 'stump1'
+					let rock2 = 'rock2'
+
+					let rock3 = 'rock3'
 
 					if (this.number == 1 || this.number == 2) {
 						this.object_list.push({
@@ -449,7 +473,16 @@ class World {
 								height: 125,
 								object: 'stump1',
 						})	
-					}
+					} else if (this.number == 5) {
+						this.object_list.push({
+								img: rock2,
+								x: 300 +(Math.random() * ((c * tile_size + 100 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky) ,
+								y: 300 +(Math.random() * ((i * tile_size + 125 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky) ,
+								length: 50,
+								height: 62,
+								object: 'rock2',
+						})	
+					} 
 					this.shakyWaky = 200
 					for (let d = 0; d < this.grassDensity; d++) {
 						this.grass_list.push({
@@ -467,7 +500,17 @@ class World {
 							length: 40,
 							height: 50,
 
-						})					
+						})	
+			
+					}
+					if (this.numer == 2 || this.number == 3) {
+						this.grass_list.push({
+							img: rock3, 
+							x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
+							y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
+							length: 40,
+							height: 50,
+						})	
 					}
 
 			}
@@ -620,6 +663,27 @@ class Enemy {
 				this.offsetL = -30 //changes length larger is shroter
 				this.offsetY = 0//height of hitbox below 
 				this.deltaOffSetY = 0 // height of hitbox above
+				
+				//remember coords are top right of player, player is 50 long 60 high
+				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y >= world.object_list[c].y + this.deltaOffSetY && this.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) { //collide with object x
+					this.velocity.x = 0
+					
+				}
+				
+				if ((this.x >= world.object_list[c].x + this.offsetX && this.x < world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
+				&& (this.y + this.velocity.y >= world.object_list[c].y + this.deltaOffSetY && this.y + this.velocity.y < world.object_list[c].y + this.offsetY + world.object_list[c].height)) {
+					this.velocity.y = 0
+					
+				}
+					
+			}
+			if (world.object_list[c].object == 'rock2') {
+
+				this.offsetX = -13 //changes x of hitbox less is to the left
+				this.offsetL = -52 //changes length larger is shroter
+				this.offsetY = 28//height of hitbox below 
+				this.deltaOffSetY = -25 // height of hitbox above, more is less, 
 				
 				//remember coords are top right of player, player is 50 long 60 high
 				if ((this.x + this.velocity.x >= world.object_list[c].x + this.offsetX && this.x + this.velocity.x <= world.object_list[c].x + this.offsetX + world.object_list[c].length / 2 - this.offsetL)
