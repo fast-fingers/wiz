@@ -337,7 +337,7 @@ function handleHealth(x, cx, y, cy, health) {
 function drawObjects(x,y, object_list) {
 	try {
 		//not tiles
-		for (let i = 0; i < object_list.length; i++) { //you could totally write this in one line
+		for (let i = 0; i < object_list.length; i++) { //you could totally write this in one
 			//only render in surrounding trees and rocks and shit
 			if ((object_list[i].x > x - render_distance) && (object_list[i].x < x + render_distance) && (object_list[i].y > y - render_distance) && (object_list[i].y < y + render_distance)){
 				if (object_list[i].img == 'treeSprite') {c.drawImage(treeSprite, object_list[i].x - x, object_list[i].y - y, object_list[i].length, object_list[i].height)}
