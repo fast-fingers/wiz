@@ -1,4 +1,9 @@
 // JavaScript source code
+
+let ws = new WebSocket("ws://localhost:3000")
+
+
+//----- canvas ------
 const canvas = document.getElementById('canvas');
 const canvas1 = document.getElementById('background');
 const c = canvas.getContext('2d');
@@ -9,27 +14,105 @@ canvas.height = innerHeight
 
 canvas1.width = innerWidth 
 canvas1.height = innerHeight
-canvas1Dimensions = {
+
+let canvas1Dimensions = {
 	x: canvas1.width,
 	y: canvas1.height,
 }
 
+let canvasDimensions = {
+	x: canvas.width,
+	y: canvas.height,
+}
+
+// ------- tiles -----------
+
+let tile_list = []
+let object_list = []
+let grass_list = []
+
+let x = 0;
+
+let camera = {
+	x:0,
+	y:0
+}
+
+
+
+let backCamera = {
+	x:3840,
+	y:3840,
+}
+
+const tile_size = 640;
+
+let render_distance = 0
+
 let terrain_list = [];
 
+// ----------- globals -------------
 let projectiles;
 let enemies;
 let players;
 let clientId;
 
 let name;
-let ws = new WebSocket("ws://localhost:3000")
  
 let playerStatus = false; //false for in main menu, true for in game
 
-let canvasDimensions = {
-	x: canvas.width,
-	y: canvas.height,
-}
+
+
+// -------------- form -----------------
+
+const form = document.getElementById("usernameForm");
+const form1 = document.getElementById("chatForm")
+
+form1.addEventListener("submit", handleSubmitChat);
+form.addEventListener("submit", handleSubmit);
+
+
+const elem = document.getElementById('chatText');
+
+let mouseOver = false;
+
+// ------------- Images -----------------
+const playerSprite = new Image()
+const playerSprite1 = new Image()
+
+const goblinSprite = new Image()
+
+goblinSprite.src = 'images/goblin1.png'
+
+playerSprite.src = 'images/wizard_sprite.png'
+playerSprite1.src = 'images/wizard_sprite1.png'
+
+
+//tiles
+const grass1 = new Image()
+const flower1 = new Image()
+
+//static sprites
+const treeSprite = new Image()
+const rockSprite = new Image()
+const rock2 = new Image()
+const rock3 = new Image()
+const bigGrass1 = new Image()
+const bigGrass2 = new Image()
+const stump1 = new Image()
+
+
+grass1.src = 'images/grass1.png'
+
+//flower1.src = 'images/flower1.png'
+stump1.src = 'images/stump1.png'
+rock2.src = 'images/rock2.png'
+rock3.src = 'images/rock3.png'
+bigGrass1.src = 'images/bigGrass1.png'
+bigGrass2.src = 'images/bigGrass2.png'
+treeSprite.src = 'images/tree1.png'
+rockSprite.src = 'images/rock1.png'
+
 
 //--------- handle form --------------
 function handleSubmit(event) {
@@ -91,17 +174,7 @@ function handleSubmitChat(event) {
 }
 
 
-
-const form = document.getElementById("usernameForm");
-const form1 = document.getElementById("chatForm")
-
-form1.addEventListener("submit", handleSubmitChat);
-form.addEventListener("submit", handleSubmit);
-
-let grass_list = []
-
 //-----------------------handle chat-------------------------
-let mouseOver = false;
 
 
 
@@ -109,18 +182,19 @@ ws.onmessage = message => {
 	//console.log(JSON.parse(message.data))
 	
 	const response = JSON.parse(message.data);
-	if (response.method === "game-state") {
+	if (response.method === "connect") {
+		clientId = response["clientId"];
+
+	}  else  if (response.method === "game-state") {
 		
 		projectiles = response["projectiles"]
 		enemies = response["enemies"]	 
 		players = response["players"]
-		
-	}  else if (response.method === "chat"){
+
+	} else if (response.method === "chat"){
 		for (let i=0; i < 11; i++) {
 			document.getElementById("line-" + (i + 1)).innerHTML = response["lines"][i]
 		}
-	} else if (response.method === "connect") {
-		clientId = response["clientId"];
 	} else if (response.method === "world-data") {
 		tile_list = response["tile_list"]
 		object_list = response["object_list"]
@@ -135,20 +209,12 @@ function textFocused() {
 		mouseOver = false;
 	}
 }
-const elem = document.getElementById('chatText');
+
 
 
 // -----------------------------------------------
 
-const playerSprite = new Image()
-const playerSprite1 = new Image()
 
-const goblinSprite = new Image()
-
-goblinSprite.src = 'images/goblin1.png'
-
-playerSprite.src = 'images/wizard_sprite.png'
-playerSprite1.src = 'images/wizard_sprite1.png'
 
 function drawProjectile(x,y, colour, size) {
 	
@@ -213,43 +279,12 @@ document.addEventListener('click', (event) => {
 })
 
 
-const tile_size = 640;
-let render_distance = 0
-
 if (canvas.width > canvas.height) {
 
 	render_distance = canvas.width + 200;
 } else {
 	render_distance = canvas.height + 200;
 }
-
-
-
-
-//tiles
-const grass1 = new Image()
-const flower1 = new Image()
-
-//static sprites
-const treeSprite = new Image()
-const rockSprite = new Image()
-const rock2 = new Image()
-const rock3 = new Image()
-const bigGrass1 = new Image()
-const bigGrass2 = new Image()
-const stump1 = new Image()
-
-
-grass1.src = 'images/grass1.png'
-
-//flower1.src = 'images/flower1.png'
-stump1.src = 'images/stump1.png'
-rock2.src = 'images/rock2.png'
-rock3.src = 'images/rock3.png'
-bigGrass1.src = 'images/bigGrass1.png'
-bigGrass2.src = 'images/bigGrass2.png'
-treeSprite.src = 'images/tree1.png'
-rockSprite.src = 'images/rock1.png'
 
 		
 function draw(x, y, tile_list) {
@@ -273,9 +308,9 @@ function handleNames(x,y, name) {
 	c.font = "15px Comic Sans MS";
 	c.fillStyle = "black";
 
-	this.offsetX = (name.length * 15) / 4
+	let offsetX = (name.length * 15) / 4
 
-	c.fillText(name,x - this.offsetX, y - 50)
+	c.fillText(name,x - offsetX, y - 50)
 }
 
 function handleLevel(x,y,level) {
@@ -300,37 +335,36 @@ function handleInfo(x, y, experienceReq, health) {
 
 function handleHealth(x, cx, y, cy, health) {
 
-	this.offset = {
-
+	let offset = {
 		x: 25,
 		y: 40,
 	}
 
 	if (health >= 75) {
-		drawHealthSegment( x - cx - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 10 - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 20 - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 30 - this.offset.x, y - cy - this.offset.y, 'green')
+		drawHealthSegment( x - cx - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 10 - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 20 - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 30 - offset.x, y - cy - offset.y, 'green')
 	} else if (health >= 50) {
-		drawHealthSegment( x - cx - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 10 - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 20 - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 30 - this.offset.x, y - cy - this.offset.y, 'red')
+		drawHealthSegment( x - cx - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 10 - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 20 - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 30 - offset.x, y - cy - offset.y, 'red')
 	} else if (health >= 25) {
-		drawHealthSegment( x - cx - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 10 - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 20 - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 30 - this.offset.x, y - cy - this.offset.y, 'red')
+		drawHealthSegment( x - cx - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 10 - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 20 - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 30 - offset.x, y - cy - offset.y, 'red')
 	} else if (health > 0) {
-		drawHealthSegment( x - cx - this.offset.x, y - cy - this.offset.y, 'green')
-		drawHealthSegment( x - cx + 10 - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 20 - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 30 - this.offset.x, y - cy - this.offset.y, 'red')
+		drawHealthSegment( x - cx - offset.x, y - cy - offset.y, 'green')
+		drawHealthSegment( x - cx + 10 - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 20 - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 30 - offset.x, y - cy - offset.y, 'red')
 	} else if (health <= 0) {
-		drawHealthSegment( x - cx - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 10 - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 20 - this.offset.x, y - cy - this.offset.y, 'red')
-		drawHealthSegment( x - cx + 30 - this.offset.x, y - cy - this.offset.y, 'red')
+		drawHealthSegment( x - cx - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 10 - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 20 - offset.x, y - cy - offset.y, 'red')
+		drawHealthSegment( x - cx + 30 - offset.x, y - cy - offset.y, 'red')
 		}
 }
 
@@ -366,24 +400,6 @@ function drawGrass(x, y, grass_list) {
 
 }
 
-tile_list = []
-object_list = []
-
-
-
-let x = 0;
-
-let camera = {
-	x:0,
-	y:0
-}
-
-
-
-let backCamera = {
-	x:3840,
-	y:3840,
-}
 let requestID;
 function backgroundWorld() {
 	
@@ -450,7 +466,7 @@ function backgroundWorld() {
 
 function handleWorld() {
 	//var start = performance.now();
-		
+		//stats.begin();
 		textFocused()
 		c.clearRect(0, 0, canvasDimensions.x, canvasDimensions.y)
 		ctx.clearRect(0, 0, canvasDimensions.x, canvasDimensions.y)
@@ -546,13 +562,23 @@ function handleWorld() {
 
 			
 		}
-
+		//stats.end()
 		//var end = performance.now();
 		//console.log(`Execution time: ${(Math.round((end - start) * 100) / 100)} ms`);
 		requestAnimationFrame(handleWorld);
 
 }
-setTimeout(()=> {
-	backgroundWorld()
 
-}, 1000)
+
+// ----- main program -------
+
+window.onload = () => {
+	setTimeout(() => {
+      backgroundWorld()
+	}, 100)
+	
+
+}
+
+
+

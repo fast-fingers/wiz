@@ -16,6 +16,10 @@ const world_size = {
 	y: 7680,
 }
 
+function randomNum(max, min) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
 class Player {
 	constructor(x, y, health, id, cameraX, cameraY, name, canvasx, canvasy) {
 		this.x = x
@@ -427,7 +431,7 @@ class World {
 
 		this.numRows = 24;
 		this.numCols = 26;
-		this.grassDensity = 1 ;
+		this.grassDensity = 2 ;
 		this.shakyWaky = 1600;
 
 
@@ -483,25 +487,52 @@ class World {
 								object: 'rock2',
 						})	
 					} 
-					this.shakyWaky = 200
-					for (let d = 0; d < this.grassDensity; d++) {
-						this.grass_list.push({
-							img: grassSprite1,
-							x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
-							y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
-							length: 40,
-							height: 50,
+					// ------- grass ----------
+					/*
+					this.shakyWaky = 200	
+					if (this.number == 1 || this.number ==3 || this.number == 5 || this.number == 7) {
+						for (let d = 0; d < this.grassDensity; d++) {
+							this.grass_list.push({
+								img: grassSprite1,
+								x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
+								y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
+								length: 40,
+								height: 50,
 
-						})	
-						this.grass_list.push({
-							img: grassSprite2,
-							x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
-							y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
-							length: 40,
-							height: 50,
+							})	
+							this.grass_list.push({
+								img: grassSprite2,
+								x: 300 +(Math.random() * ((c * tile_size + 1000 + this.shakyWaky) - c * tile_size - this.shakyWaky) + c * tile_size - this.shakyWaky),
+								y: 300 +(Math.random() * ((i * tile_size + 1250 + this.shakyWaky) - i * tile_size - this.shakyWaky) + i * tile_size - this.shakyWaky),
+								length: 40,
+								height: 50,
 
-						})	
-			
+							})	
+				
+						}
+					}
+					*/
+					this.shakyWaky = 200	
+					if (this.number == 1 || this.number ==3 || this.number == 5 || this.number == 7) {
+						for (let d = 0; d < this.grassDensity; d++) {
+							this.grass_list.push({
+								img: grassSprite1,
+								x: 300 + randomNum(c * tile_size + 50,  c * tile_size),
+								y: 300 + randomNum(i * tile_size + 50,  i * tile_size),
+								length: 40,
+								height: 50,
+
+							})	
+							this.grass_list.push({
+								img: grassSprite2,
+								x: 300 + randomNum(c * tile_size + 50,  c * tile_size),
+								y: 300 + randomNum(i * tile_size + 50,  i * tile_size),
+								length: 40,
+								height: 50,
+
+							})	
+				
+						}
 					}
 					if (this.numer == 2 || this.number == 3) {
 						this.grass_list.push({
@@ -512,6 +543,33 @@ class World {
 							height: 50,
 						})	
 					}
+
+					// grass patches
+					/*
+					if (this.number == 6) {
+						for (let x =0; x < 4; x++) {	
+							this.grass_list.push({
+								img: grassSprite1,
+								x: 300 + (c * tile_size) + randomNum(Math.random() * 150 ,  Math.random() * 150),
+								y: 300 + (i * tile_size) + randomNum(Math.random() * 150 ,  Math.random() * 150),
+								length: 40,
+								height: 50,
+
+							})	
+							this.grass_list.push({
+								img: grassSprite2,
+								x: 300 +(c * tile_size) + randomNum(Math.random() * 150 ,  Math.random() * 150),
+								y: 300 +(i * tile_size) + randomNum(Math.random() * 150 ,  Math.random() * 150),
+								length: 40,
+								height: 50,
+
+							})
+							
+						}
+
+					}
+
+					*/
 
 			}
 		}

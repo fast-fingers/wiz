@@ -3,6 +3,7 @@
     "@socket.io/admin-ui": "^0.2.0",
     "express": "^4.18.1",
     "socket.io": "^4.5.1",
+    "stats.js": "^0.17.0",
     "websockets": "^0.2.0",
     "ws": "^8.8.0"
   }
