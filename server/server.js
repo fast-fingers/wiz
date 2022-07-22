@@ -514,19 +514,19 @@ class World {
 					*/
 					this.shakyWaky = 200	
 					if (this.number == 1 || this.number ==3 || this.number == 5 || this.number == 7) {
-						for (let d = 0; d < this.grassDensity; d++) {
+						for (let d = 1; d < this.grassDensity + 1; d++) {
 							this.grass_list.push({
 								img: grassSprite1,
-								x: 300 + randomNum(c * tile_size + 50,  c * tile_size),
-								y: 300 + randomNum(i * tile_size + 50,  i * tile_size),
+								x: 300 + randomNum(c * tile_size + (d * 10),  c * tile_size),
+								y: 300 + randomNum(i * tile_size + (d * 10),  i * tile_size),
 								length: 40,
 								height: 50,
 
 							})	
-							this.grass_list.push({
+							this.grass_list.push({ 
 								img: grassSprite2,
-								x: 300 + randomNum(c * tile_size + 50,  c * tile_size),
-								y: 300 + randomNum(i * tile_size + 50,  i * tile_size),
+								x: 300 + randomNum(c * tile_size + (d * 10),  c * tile_size),
+								y: 300 + randomNum(i * tile_size + (d * 10),  i * tile_size),
 								length: 40,
 								height: 50,
 
